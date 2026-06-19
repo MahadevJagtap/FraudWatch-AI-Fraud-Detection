@@ -1,0 +1,9 @@
+# PaySim fraud-detection pipeline
+# Tested with Python 3.12.
+
+numpy>=2.0
+pandas>=2.2
+pyarrow>=15.0        # parquet engine
+
+scikit-learn>=1.5
+xgboost>=2.1

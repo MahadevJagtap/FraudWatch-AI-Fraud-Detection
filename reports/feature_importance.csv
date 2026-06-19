@@ -1,0 +1,12 @@
+feature,importance
+is_merchant,0.8125222
+errorBalanceOrig,0.16651438
+amount,0.009249179
+errorBalanceDest,0.0050547756
+hour_of_day,0.004794015
+day_of_week,0.0018654491
+type_CASH_IN,0.0
+type_CASH_OUT,0.0
+type_DEBIT,0.0
+type_PAYMENT,0.0
+type_TRANSFER,0.0
