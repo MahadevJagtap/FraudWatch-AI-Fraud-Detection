@@ -1,0 +1,41 @@
+{
+  "model_name": "fastai_tabular_deep_learning",
+  "model_type": "TabularLearner (MLP with Entity Embeddings)",
+  "layers": [
+    200,
+    100
+  ],
+  "cat_names": [
+    "hour_of_day",
+    "day_of_week",
+    "type_CASH_IN",
+    "type_CASH_OUT",
+    "type_DEBIT",
+    "type_PAYMENT",
+    "type_TRANSFER",
+    "is_merchant",
+    "dest_is_customer",
+    "orig_is_zero",
+    "dest_is_zero"
+  ],
+  "cont_names": [
+    "amount",
+    "log_amount",
+    "orig_old_balance",
+    "dest_old_balance",
+    "orig_drain_ratio"
+  ],
+  "train_samples_used": 156373,
+  "test_samples": 81110,
+  "training_time_seconds": 12.71,
+  "test_auprc": 0.9592,
+  "test_roc_auc": 0.9993,
+  "decision_threshold": 0.9643,
+  "test_f1": 0.8838,
+  "test_precision": 0.9169,
+  "test_recall": 0.8531,
+  "test_true_positives": 894,
+  "test_false_positives": 81,
+  "test_false_negatives": 154,
+  "test_true_negatives": 79981
+}

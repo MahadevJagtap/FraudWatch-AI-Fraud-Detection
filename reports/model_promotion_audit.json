@@ -1,0 +1,11 @@
+{
+  "timestamp": 1792344438.2994978,
+  "drift_detected": false,
+  "drift_share": 0.0,
+  "champion_auprc": 0.9891,
+  "candidate_auprc": 0.994,
+  "promotion_verdict": "APPROVED_FOR_PROMOTION",
+  "is_model_promoted": true,
+  "explanation": "Candidate model outperformed champion. Safe to promote.",
+  "policy": "Candidate must meet or exceed Champion AUPRC on validation benchmark regardless of drift status."
+}

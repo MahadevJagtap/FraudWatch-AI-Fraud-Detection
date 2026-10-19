@@ -1,0 +1,96 @@
+{
+  "model_name": "leakage_free_xgb_model",
+  "description": "Pre-authorization XGBoost model evaluated on chronological out-of-time test set with validation-tuned threshold",
+  "feature_count": 16,
+  "features": [
+    "hour_of_day",
+    "day_of_week",
+    "type_CASH_IN",
+    "type_CASH_OUT",
+    "type_DEBIT",
+    "type_PAYMENT",
+    "type_TRANSFER",
+    "amount",
+    "log_amount",
+    "is_merchant",
+    "dest_is_customer",
+    "orig_old_balance",
+    "dest_old_balance",
+    "orig_is_zero",
+    "dest_is_zero",
+    "orig_drain_ratio"
+  ],
+  "feature_dtypes": {
+    "hour_of_day": "int8",
+    "day_of_week": "int8",
+    "type_CASH_IN": "int8",
+    "type_CASH_OUT": "int8",
+    "type_DEBIT": "int8",
+    "type_PAYMENT": "int8",
+    "type_TRANSFER": "int8",
+    "amount": "float32",
+    "log_amount": "float32",
+    "is_merchant": "int8",
+    "dest_is_customer": "int8",
+    "orig_old_balance": "float32",
+    "dest_old_balance": "float32",
+    "orig_is_zero": "int8",
+    "dest_is_zero": "int8",
+    "orig_drain_ratio": "float32"
+  },
+  "target": "isFraud",
+  "scale_pos_weight": 972.0415816726817,
+  "best_iteration": 21,
+  "train_rows": 6201194,
+  "val_rows": 80316,
+  "test_rows": 81110,
+  "chronological_splits": {
+    "train": {
+      "step_range": [1, 576],
+      "days": "Days 1-24",
+      "rows": 6201194
+    },
+    "val": {
+      "step_range": [577, 648],
+      "days": "Days 25-27",
+      "rows": 80316
+    },
+    "test": {
+      "step_range": [649, 743],
+      "days": "Days 28-31",
+      "rows": 81110
+    }
+  },
+  "test_fraud_prevalence": 0.012920724941437554,
+  "decision_threshold": 0.8247,
+  "threshold_selection_dataset": "validation (steps 577-648)",
+  "hyperparameters": {
+    "n_estimators": 300,
+    "learning_rate": 0.08,
+    "max_depth": 6,
+    "min_child_weight": 10,
+    "subsample": 0.8,
+    "colsample_bytree": 0.8,
+    "eval_metric": "aucpr",
+    "early_stopping_rounds": 30,
+    "n_jobs": -1,
+    "random_state": 42
+  },
+  "metrics": {
+    "val_auprc": 0.9891,
+    "val_roc_auc": 0.9999,
+    "val_f1_at_optimal_threshold": 0.9393,
+    "test_auprc": 0.9917,
+    "test_roc_auc": 0.9999,
+    "decision_threshold": 0.8247,
+    "test_precision": 0.9209,
+    "test_recall": 0.9771,
+    "test_f1_at_optimal_threshold": 0.9481,
+    "test_true_positives": 1024,
+    "test_false_positives": 88,
+    "test_false_negatives": 24,
+    "test_true_negatives": 79974,
+    "training_time_seconds": 26.23,
+    "inference_latency_ms": 0.0003
+  }
+}

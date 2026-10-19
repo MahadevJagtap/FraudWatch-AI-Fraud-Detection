@@ -1,0 +1,22 @@
+artifact_path: file:D:/Fraud_detection/PaySim-Fraud-Detection/mlruns/1/models/m-1ff78cc58dfc4dd1b4bb471cb855d18d/artifacts
+flavors:
+  python_function:
+    data: model.ubj
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.xgboost
+    python_version: 3.12.7
+  xgboost:
+    code: null
+    data: model.ubj
+    model_class: xgboost.sklearn.XGBClassifier
+    model_format: ubj
+    xgb_version: 3.4.1
+mlflow_version: 3.17.1
+model_id: m-1ff78cc58dfc4dd1b4bb471cb855d18d
+model_size_bytes: 160115
+model_uuid: m-1ff78cc58dfc4dd1b4bb471cb855d18d
+prompts: null
+run_id: 4de45c11c4c44175924c03fddf7485b7
+utc_time_created: '2026-10-18 15:51:08.941669'

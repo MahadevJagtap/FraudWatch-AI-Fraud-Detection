@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <!-- Background Shield Gradient: Deep Navy to Electric Royal Blue -->
+    <linearGradient id="fwShieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563EB" />
+      <stop offset="55%" stop-color="#1D4ED8" />
+      <stop offset="100%" stop-color="#0F172A" />
+    </linearGradient>
+
+    <!-- Shield Border Highlight Gradient: Cyber Cyan to Sapphire -->
+    <linearGradient id="fwBorderGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="60%" stop-color="#60A5FA" />
+      <stop offset="100%" stop-color="#1E40AF" />
+    </linearGradient>
+
+    <!-- Central Lightning-Checkmark Gradient: Pure Bright White to Ice Blue -->
+    <linearGradient id="fwBoltGrad" x1="20%" y1="0%" x2="80%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="70%" stop-color="#F0F9FF" />
+      <stop offset="100%" stop-color="#BAE6FD" />
+    </linearGradient>
+
+    <!-- Subtle Drop Shadow for depth -->
+    <filter id="fwShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="1.5" flood-color="#020617" flood-opacity="0.45" />
+    </filter>
+
+    <!-- Inner Glow on the Emblem -->
+    <filter id="fwEmblemGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="1" stdDeviation="1" flood-color="#0284C7" flood-opacity="0.35" />
+    </filter>
+  </defs>
+
+  <!-- Group with Shadow -->
+  <g filter="url(#fwShadow)">
+    <!-- Primary Security Shield -->
+    <path d="M 32 5 
+             C 45 5, 53 10, 53 17 
+             C 53 36, 42 49, 32 58 
+             C 22 49, 11 36, 11 17 
+             C 11 10, 19 5, 32 5 Z"
+          fill="url(#fwShieldGrad)"
+          stroke="url(#fwBorderGrad)"
+          stroke-width="2"
+          stroke-linejoin="round" />
+
+    <!-- Subtle Inner Accent Shield Rim -->
+    <path d="M 32 9 
+             C 42 9, 49 13, 49 19 
+             C 49 34, 40 45, 32 53 
+             C 24 45, 15 34, 15 19 
+             C 15 13, 22 9, 32 9 Z"
+          fill="none"
+          stroke="#38BDF8"
+          stroke-width="1"
+          stroke-opacity="0.35"
+          stroke-dasharray="2 1" />
+
+    <!-- AI Pulse Node at Top Center (Subtle tech motif) -->
+    <circle cx="32" cy="11.5" r="1.8" fill="#38BDF8" opacity="0.8" />
+
+    <!-- Central Motif: AI Lightning-Checkmark Fusion -->
+    <!-- Represents instant algorithmic verification + lightning fraud prevention -->
+    <path d="M 19 32.5 
+             L 27.5 41.5 
+             L 34.5 32 
+             L 40.5 32 
+             L 46.5 17 
+             L 34 26 
+             L 37.5 26 
+             L 27.5 36.5 
+             L 23 31 Z"
+          fill="url(#fwBoltGrad)"
+          stroke="#FFFFFF"
+          stroke-width="0.75"
+          stroke-linejoin="round"
+          stroke-linecap="round"
+          filter="url(#fwEmblemGlow)" />
+  </g>
+</svg>

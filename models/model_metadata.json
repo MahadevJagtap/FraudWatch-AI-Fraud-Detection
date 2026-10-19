@@ -1,0 +1,48 @@
+{
+  "model_type": "XGBClassifier",
+  "features": [
+    "amount",
+    "errorBalanceOrig",
+    "errorBalanceDest",
+    "is_merchant",
+    "hour_of_day",
+    "day_of_week",
+    "type_CASH_IN",
+    "type_CASH_OUT",
+    "type_DEBIT",
+    "type_PAYMENT",
+    "type_TRANSFER"
+  ],
+  "feature_dtypes": {
+    "amount": "float32",
+    "errorBalanceOrig": "float32",
+    "errorBalanceDest": "float32",
+    "is_merchant": "int8",
+    "hour_of_day": "int8",
+    "day_of_week": "int8",
+    "type_CASH_IN": "int8",
+    "type_CASH_OUT": "int8",
+    "type_DEBIT": "int8",
+    "type_PAYMENT": "int8",
+    "type_TRANSFER": "int8"
+  },
+  "target": "isFraud",
+  "scale_pos_weight": 773.7482496194825,
+  "train_rows": 5090096,
+  "test_rows": 1272524,
+  "test_fraud_prevalence": 0.0012911347840983745,
+  "metrics": {
+    "precision_fraud": 0.13921135065413673,
+    "recall_fraud": 0.9196591600730372,
+    "f1_fraud": 0.2418180363287189,
+    "auprc": 0.8428473874908453,
+    "roc_auc": 0.996876841488755,
+    "confusion_matrix": {
+      "tn": 1261538,
+      "fp": 9343,
+      "fn": 132,
+      "tp": 1511
+    },
+    "inference_seconds": 7.121715999997832
+  }
+}

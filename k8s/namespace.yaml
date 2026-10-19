@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: fraudwatch
+  labels:
+    app.kubernetes.io/name: fraudwatch
+    app.kubernetes.io/part-of: fraud-detection-platform

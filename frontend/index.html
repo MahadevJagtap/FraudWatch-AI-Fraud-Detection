@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FraudWatch | AI Fraud Detection</title>
+  <meta name="description" content="An intelligent financial transaction monitoring platform that uses machine learning to identify potentially fraudulent transactions and support risk-based decisions.">
+  
+  <!-- Custom FraudWatch Favicon & Brand Tab Identity -->
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="alternate icon" type="image/png" sizes="32x32" href="assets/favicon-32x32.png">
+  <link rel="alternate icon" type="image/png" sizes="16x16" href="assets/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
+  <link rel="shortcut icon" href="assets/favicon.ico">
+  <meta name="theme-color" content="#1D4ED8">
+
+  <link rel="stylesheet" href="styles.css">
+  <!-- Chart.js for risk distribution visualizer -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="app-sidebar" id="appSidebar">
+      <div class="sidebar-header">
+        <div class="brand-wrapper">
+          <div class="brand-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              <path d="m9 12 2 2 4-4"/>
+            </svg>
+          </div>
+          <div class="brand-text">
+            <span class="brand-name">FraudWatch</span>
+            <span class="brand-subtitle">Risk & AML Engine</span>
+          </div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-label">Navigation</div>
+        
+        <button class="nav-item active" data-view="overview" id="navOverview">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <rect width="7" height="9" x="3" y="3" rx="1"/>
+            <rect width="7" height="5" x="14" y="3" rx="1"/>
+            <rect width="7" height="9" x="14" y="12" rx="1"/>
+            <rect width="7" height="5" x="3" y="16" rx="1"/>
+          </svg>
+          <span>Overview</span>
+        </button>
+
+        <button class="nav-item" data-view="analyze" id="navAnalyze">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            <line x1="11" y1="8" x2="11" y2="14"/>
+            <line x1="8" y1="11" x2="14" y2="11"/>
+          </svg>
+          <span>Analyze Transaction</span>
+        </button>
+
+        <button class="nav-item" data-view="batch" id="navBatch">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="12" y1="18" x2="12" y2="12"/>
+            <line x1="9" y1="15" x2="15" y2="15"/>
+          </svg>
+          <span>Batch CSV Analysis</span>
+        </button>
+
+        <button class="nav-item" data-view="monitoring" id="navMonitoring">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+          </svg>
+          <span>Live Monitoring</span>
+          <span class="nav-badge alert" id="sidebarAlertBadge" style="display:none;">0</span>
+        </button>
+
+        <button class="nav-item" data-view="cases" id="navCases">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+            <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
+            <path d="M9 14h6"/>
+            <path d="M9 18h6"/>
+            <path d="M9 10h1"/>
+          </svg>
+          <span>Fraud Cases</span>
+          <span class="nav-badge" id="sidebarCaseBadge">0</span>
+        </button>
+
+        <div class="nav-section-label" style="margin-top: 0.5rem;">Governance</div>
+
+        <button class="nav-item" data-view="health" id="navHealth">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+          </svg>
+          <span>Model & Health</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="api-pill" id="sidebarApiPill" title="Click to configure API Base URL">
+          <span class="status-dot online pulsing" id="sidebarStatusDot"></span>
+          <span id="sidebarStatusText">API Connected</span>
+          <span id="sidebarLatency" style="margin-left: auto; font-size: 0.72rem; color: var(--text-light);">--ms</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.72rem; color: var(--text-muted); padding: 0 4px;">
+          <span>Policy: <strong id="sidebarPolicyText">Demo 90/50</strong></span>
+          <a href="http://127.0.0.1:8000/docs" target="_blank" rel="noreferrer" style="font-size: 0.72rem;">API Docs &nearr;</a>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Application Shell -->
+    <main class="app-main">
+      <!-- Top Application Bar -->
+      <header class="app-header">
+        <div class="header-title-group">
+          <button class="btn-icon" id="btnToggleSidebar" aria-label="Toggle Navigation">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="3" y1="12" x2="21" y2="12"/>
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+          </button>
+          <div>
+            <h1 class="page-title" id="pageTitle">Platform Overview</h1>
+            <span class="page-subtitle" id="pageSubtitle">Real-time fraud scoring pipeline and risk governance</span>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <button class="btn-header-pill" id="btnOpenThresholdModal" title="Configure demo risk decision thresholds">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+            <span id="headerThresholdText">Block: 0.90 | Review: 0.50</span>
+          </button>
+
+          <button class="btn-icon" id="btnRefreshData" title="Refresh Live Data" aria-label="Refresh Data">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+            </svg>
+          </button>
+
+          <button class="btn-icon" id="btnToggleTheme" title="Toggle Light/Dark Theme" aria-label="Toggle Theme">
+            <svg id="themeIconSun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;">
+              <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            </svg>
+            <svg id="themeIconMoon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- Views Viewport -->
+      <div class="view-viewport">
+
+        <!-- ====================================================================
+             VIEW 1: OVERVIEW
+             ==================================================================== -->
+        <section class="view-section active" id="view-overview">
+          <!-- Hero Section -->
+          <div class="hero-banner">
+            <div>
+              <h2 class="hero-title">
+                <span>FraudWatch</span>
+                <span class="badge badge-primary">v1.2 Production</span>
+              </h2>
+              <p class="hero-description">
+                <em>An intelligent financial transaction monitoring platform that uses machine learning to identify potentially fraudulent transactions and support risk-based decisions.</em>
+              </p>
+            </div>
+
+            <!-- Visual Workflow Stepper -->
+            <div class="workflow-strip">
+              <div class="workflow-step">
+                <span class="step-num">1</span>
+                <span>Transaction Ingestion</span>
+              </div>
+              <div class="workflow-arrow">&rarr;</div>
+              <div class="workflow-step">
+                <span class="step-num">2</span>
+                <span>Machine Learning Analysis</span>
+              </div>
+              <div class="workflow-arrow">&rarr;</div>
+              <div class="workflow-step">
+                <span class="step-num">3</span>
+                <span>Risk Assessment</span>
+              </div>
+              <div class="workflow-arrow">&rarr;</div>
+              <div class="workflow-step">
+                <span class="step-num">4</span>
+                <span>Review or Action</span>
+              </div>
+            </div>
+
+            <div class="hero-actions">
+              <button class="btn btn-primary" id="heroBtnAnalyze">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                Analyze a Transaction
+              </button>
+              <button class="btn btn-secondary" id="heroBtnBatch">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                </svg>
+                Analyze a CSV File
+              </button>
+            </div>
+          </div>
+
+          <!-- KPI Cards Grid -->
+          <div class="grid-5">
+            <div class="stat-card">
+              <span class="stat-label">Transactions Scored</span>
+              <span class="stat-value" id="kpiTotalScored">0</span>
+              <span class="stat-subtext">Active session & cases</span>
+            </div>
+
+            <div class="stat-card risk-high">
+              <span class="stat-label">High Risk (Block)</span>
+              <span class="stat-value" id="kpiHighRisk">0</span>
+              <span class="stat-subtext" style="color: var(--risk-high-text);">&ge; 0.90 Probability</span>
+            </div>
+
+            <div class="stat-card risk-medium">
+              <span class="stat-label">Medium Risk (Review)</span>
+              <span class="stat-value" id="kpiMediumRisk">0</span>
+              <span class="stat-subtext" style="color: var(--risk-medium-text);">0.50 &ndash; 0.89 Flagged</span>
+            </div>
+
+            <div class="stat-card risk-low">
+              <span class="stat-label">Low Risk (Approved)</span>
+              <span class="stat-value" id="kpiLowRisk">0</span>
+              <span class="stat-subtext" style="color: var(--risk-low-text);">&lt; 0.50 Cleared</span>
+            </div>
+
+            <div class="stat-card">
+              <span class="stat-label">Model / API Health</span>
+              <span class="stat-value" id="kpiModelStatus" style="font-size: 1.25rem;">ONLINE</span>
+              <span class="stat-subtext" id="kpiModelDetails">XGBoost &bull; 11 Features</span>
+            </div>
+          </div>
+
+          <!-- Educational Explanations Grid -->
+          <div class="grid-2">
+            <div class="info-card">
+              <h4>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                What Financial Fraud Detection Means
+              </h4>
+              <p>
+                Financial fraud detection is the automated process of analyzing electronic transaction streams in real time to intercept unauthorized balance transfers, account takeovers, and laundering attempts before funds irrevocably leave the payments network.
+              </p>
+            </div>
+
+            <div class="info-card">
+              <h4>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                How FraudWatch Analyzes Transactions
+              </h4>
+              <p>
+                Every transaction is evaluated using gradient-boosted decision trees trained on PaySim financial behaviors. The engine engineers origin drain ratios, balance integrity flags, simulation hour cycles, recipient merchant classification, and Feast online account history.
+              </p>
+            </div>
+
+            <div class="info-card">
+              <h4>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                Risk Categories Under Configured Demo Policy
+              </h4>
+              <p>
+                <strong>Low Risk (&lt; 0.50):</strong> Automated approval for routine spending.<br>
+                <strong>Medium Risk (0.50 &ndash; 0.89):</strong> Flagged for human review; funds placed on temporary hold.<br>
+                <strong>High Risk (&ge; 0.90):</strong> Automated block; immediate critical alert persisted to SQLite cases store.
+              </p>
+            </div>
+
+            <div class="info-card">
+              <h4>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                Why Analysts Review Suspicious Cases
+              </h4>
+              <p>
+                Machine learning flags anomalies with high sensitivity, but human analysts apply contextual judgment. FraudWatch logs every alert to an immutable audit trail where investigators record dispositions, confirm real attacks, and prevent false customer friction.
+              </p>
+            </div>
+          </div>
+
+          <!-- Charts & Activity Row -->
+          <div class="grid-2">
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Risk Distribution</h3>
+                  <span class="card-subtitle">Breakdown of scored transactions</span>
+                </div>
+              </div>
+              <div style="height: 240px; display: flex; align-items: center; justify-content: center; position: relative;">
+                <canvas id="riskDistributionChart"></canvas>
+                <div id="noChartDataMsg" style="color: var(--text-muted); font-size: 0.85rem; text-align: center;">
+                  No transactions scored yet in this session.<br>Click <strong>Analyze a Transaction</strong> to begin.
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Recent Scored Transactions</h3>
+                  <span class="card-subtitle">Latest activity across sessions</span>
+                </div>
+              </div>
+              <div class="table-wrapper" style="max-height: 240px;">
+                <table class="data-table" id="recentTransactionsTable">
+                  <thead>
+                    <tr>
+                      <th>TX ID</th>
+                      <th>Type</th>
+                      <th>Amount</th>
+                      <th>Score</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="recentTransactionsBody">
+                    <tr>
+                      <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                        No transactions scored yet. Run a single or batch analysis to see live records.
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ====================================================================
+             VIEW 2: ANALYZE TRANSACTION
+             ==================================================================== -->
+        <section class="view-section" id="view-analyze">
+          <!-- Presets Toolbar -->
+          <div class="card" style="padding: 1rem 1.25rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+              <span style="font-size: 0.82rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Quick Demo Presets:</span>
+              <div class="presets-bar" style="margin-bottom: 0;">
+                <button type="button" class="preset-chip" id="presetFraud">
+                  <span>🚨 Typical Fraud (Account Drained)</span>
+                </button>
+                <button type="button" class="preset-chip" id="presetLegit">
+                  <span>✅ Legitimate Merchant Payment</span>
+                </button>
+                <button type="button" class="preset-chip" id="presetLive">
+                  <span>⚡ Live In-Flight Transfer</span>
+                </button>
+                <button type="button" class="preset-chip" id="presetReview">
+                  <span>⚠️ Suspicious In-Flight (Review)</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <!-- Left: Transaction Form -->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Transaction Parameters</h3>
+                  <span class="card-subtitle">Fill in transfer parameters to score via <code>POST /predict</code></span>
+                </div>
+              </div>
+
+              <form id="singleTxForm">
+                <!-- Mode Switcher -->
+                <div class="form-group">
+                  <label class="form-label">
+                    <span>Feature Ingestion Mode</span>
+                    <span class="form-hint" id="modeHint">Historical mode requires settled new balances</span>
+                  </label>
+                  <div class="segmented-control" id="modeSegmentedControl">
+                    <button type="button" class="segmented-option active" data-mode="historical" id="modeBtnHistorical">
+                      Historical (Post-Settlement)
+                    </button>
+                    <button type="button" class="segmented-option" data-mode="live_authorization" id="modeBtnLive">
+                      Live Authorization (In-Flight)
+                    </button>
+                  </div>
+                </div>
+
+                <div class="form-row cols-2">
+                  <div class="form-group">
+                    <label class="form-label" for="txId">Transaction ID</label>
+                    <input type="text" class="form-input" id="txId" required value="TX-MANUAL-001">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="txStep">
+                      <span>Step (Hour 1..744)</span>
+                      <span class="form-hint" id="stepTimeHint">Day 1, 01:00</span>
+                    </label>
+                    <input type="number" class="form-input" id="txStep" min="1" max="744" required value="1">
+                  </div>
+                </div>
+
+                <div class="form-row cols-2">
+                  <div class="form-group">
+                    <label class="form-label" for="txType">Transaction Type</label>
+                    <select class="form-select" id="txType" required>
+                      <option value="TRANSFER" selected>TRANSFER (High Risk Category)</option>
+                      <option value="CASH_OUT">CASH_OUT (High Risk Category)</option>
+                      <option value="PAYMENT">PAYMENT (Low Risk Merchant)</option>
+                      <option value="CASH_IN">CASH_IN (Deposit)</option>
+                      <option value="DEBIT">DEBIT (Direct Debit)</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="txAmount">Transaction Amount ($)</label>
+                    <input type="number" class="form-input" id="txAmount" min="0.01" step="0.01" required value="250000.00">
+                  </div>
+                </div>
+
+                <!-- Origin Account -->
+                <div style="border-top: 1px solid var(--border-subtle); padding-top: 0.75rem; margin-top: 0.5rem;">
+                  <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Origin Account (Sender)</span>
+                  <div class="form-row cols-3" style="margin-top: 0.4rem;">
+                    <div class="form-group">
+                      <label class="form-label" for="txNameOrig">Account ID</label>
+                      <input type="text" class="form-input" id="txNameOrig" required value="C123456789">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" for="txOldOrig">Old Balance ($)</label>
+                      <input type="number" class="form-input" id="txOldOrig" min="0" step="0.01" required value="250000.00">
+                    </div>
+                    <div class="form-group" id="groupNewOrig">
+                      <label class="form-label" for="txNewOrig">New Balance ($)</label>
+                      <input type="number" class="form-input" id="txNewOrig" min="0" step="0.01" value="0.00">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Recipient Account -->
+                <div style="border-top: 1px solid var(--border-subtle); padding-top: 0.75rem; margin-top: 0.5rem;">
+                  <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Recipient Account (Receiver)</span>
+                  <div class="form-row cols-3" style="margin-top: 0.4rem;">
+                    <div class="form-group">
+                      <label class="form-label" for="txNameDest">Account ID</label>
+                      <input type="text" class="form-input" id="txNameDest" required value="C987654321">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" for="txOldDest">Old Balance ($)</label>
+                      <input type="number" class="form-input" id="txOldDest" min="0" step="0.01" required value="0.00">
+                    </div>
+                    <div class="form-group" id="groupNewDest">
+                      <label class="form-label" for="txNewDest">New Balance ($)</label>
+                      <input type="number" class="form-input" id="txNewDest" min="0" step="0.01" value="0.00">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Feast Enrichment Checkbox -->
+                <div style="margin-top: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+                  <input type="checkbox" id="txUseFeast" style="width: 16px; height: 16px; cursor: pointer;">
+                  <label for="txUseFeast" style="font-size: 0.82rem; font-weight: 500; cursor: pointer;">
+                    Enrich using Feast Online Feature Store (queries precomputed SQLite feature views)
+                  </label>
+                </div>
+
+                <div style="margin-top: 1.25rem; display: flex; gap: 0.75rem;">
+                  <button type="submit" class="btn btn-primary" id="btnScoreTx" style="flex: 2;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polygon points="5 3 19 12 5 21 5 3"/>
+                    </svg>
+                    Score Transaction
+                  </button>
+                  <button type="button" class="btn btn-secondary" id="btnResetForm" style="flex: 1;">
+                    Reset
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Right: Scoring Result Panel -->
+            <div class="result-card" id="scoringResultCard">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Risk Assessment Result</h3>
+                  <span class="card-subtitle" id="scoringResultSubtitle">Real-time model prediction</span>
+                </div>
+                <span class="badge badge-neutral" id="resultStatusBadge">Awaiting Input</span>
+              </div>
+
+              <!-- Idle Placeholder -->
+              <div id="resultIdleState" style="text-align: center; padding: 3rem 1rem; color: var(--text-muted);">
+                <div style="width: 56px; height: 56px; border-radius: 50%; background: var(--bg-card-subtle); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/>
+                  </svg>
+                </div>
+                <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.35rem;">No Transaction Scored Yet</h4>
+                <p style="font-size: 0.85rem; max-width: 320px; margin: 0 auto;">
+                  Configure parameters on the left or select a Quick Demo Preset, then click <strong>Score Transaction</strong>.
+                </p>
+              </div>
+
+              <!-- Active Scored Result View -->
+              <div id="resultActiveState" style="display: none; flex-direction: column; gap: 1.25rem;">
+                <!-- Circular Risk Gauge -->
+                <div class="gauge-container">
+                  <svg class="gauge-svg" viewBox="0 0 200 110">
+                    <path class="gauge-bg-path" d="M 20 100 A 80 80 0 0 1 180 100" />
+                    <path class="gauge-fill-path" id="gaugeFillPath" d="M 20 100 A 80 80 0 0 1 180 100" stroke-dasharray="251.2" stroke-dashoffset="251.2" />
+                  </svg>
+                  <div class="gauge-value" id="resFraudProbability">0.00%</div>
+                  <div class="gauge-label">Fraud Probability Score</div>
+                </div>
+
+                <!-- Big Action Decision Banner -->
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 1.25rem; border-radius: var(--radius-md); background: var(--bg-card-subtle);" id="resActionBanner">
+                  <div>
+                    <span style="font-size: 0.72rem; text-transform: uppercase; font-weight: 700; color: var(--text-muted);">Recommended Action</span>
+                    <div style="font-size: 1.25rem; font-weight: 800;" id="resRecommendedAction">APPROVE</div>
+                  </div>
+                  <span class="badge badge-low" id="resRiskBadge" style="font-size: 0.85rem; padding: 0.35rem 0.85rem;">LOW RISK</span>
+                </div>
+
+                <!-- Extracted Feature Insights -->
+                <div class="result-metrics-grid">
+                  <div class="result-metric-item">
+                    <span class="metric-item-label">Origin Drain Ratio</span>
+                    <span class="metric-item-value" id="resDrainRatio">0.00%</span>
+                  </div>
+                  <div class="result-metric-item">
+                    <span class="metric-item-label">Balance Discrepancy</span>
+                    <span class="metric-item-value" id="resBalanceDiscrepancy">$0.00</span>
+                  </div>
+                  <div class="result-metric-item">
+                    <span class="metric-item-label">Feature Source</span>
+                    <span class="metric-item-value" id="resFeatureSource">Payload</span>
+                  </div>
+                  <div class="result-metric-item">
+                    <span class="metric-item-label">Feast Store Status</span>
+                    <span class="metric-item-value" id="resFeastStatus">Disabled</span>
+                  </div>
+                </div>
+
+                <!-- Audit Disclaimer Box -->
+                <div class="info-card" id="resAuditBox" style="background-color: var(--bg-card-subtle);">
+                  <div style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Audit Notice</div>
+                  <p id="resAuditNote" style="font-size: 0.82rem; margin: 0;">Feature derivation verified against offline benchmark policy.</p>
+                </div>
+
+                <!-- Raw JSON Expander -->
+                <details style="font-size: 0.8rem; background: var(--bg-card-subtle); border-radius: var(--radius-md); padding: 0.6rem 0.85rem; cursor: pointer;">
+                  <summary style="font-weight: 600; color: var(--text-secondary);">View Raw API Response JSON</summary>
+                  <pre id="resRawJson" style="margin-top: 0.5rem; overflow-x: auto; font-family: monospace; font-size: 0.75rem; color: var(--text-primary);"></pre>
+                </details>
+              </div>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ====================================================================
+             VIEW 3: BATCH CSV ANALYSIS
+             ==================================================================== -->
+        <section class="view-section" id="view-batch">
+          <div class="grid-2">
+            <!-- Dropzone Container -->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Upload Transaction Batch</h3>
+                  <span class="card-subtitle">Upload CSV to evaluate multiple transactions via <code>POST /predict/batch</code></span>
+                </div>
+              </div>
+
+              <!-- Drag & Drop Zone -->
+              <div class="dropzone" id="csvDropzone">
+                <svg class="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="17 8 12 3 7 8"/>
+                  <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                <div class="dropzone-text">Drag & drop your CSV file here, or click to browse</div>
+                <div class="dropzone-subtext">Supports up to 500 transactions per batch</div>
+                <input type="file" id="csvFileInput" accept=".csv" style="display: none;">
+              </div>
+
+              <!-- Upload Status & File Info -->
+              <div id="fileUploadInfo" style="display: none; margin-top: 1rem; padding: 0.75rem 1rem; border-radius: var(--radius-md); background: var(--bg-card-subtle); align-items: center; justify-content: space-between;">
+                <div>
+                  <strong id="uploadFileName">data.csv</strong>
+                  <div style="font-size: 0.75rem; color: var(--text-muted);" id="uploadFileMeta">0 rows &bull; 0 KB</div>
+                </div>
+                <button type="button" class="btn btn-primary btn-sm" id="btnSubmitBatch">Score Batch</button>
+              </div>
+
+              <!-- Validation Warnings -->
+              <div id="batchValErrors" style="display: none; margin-top: 1rem; padding: 0.75rem; border-radius: var(--radius-md); background: var(--risk-high-bg); color: var(--risk-high-text); font-size: 0.8rem;">
+                <strong>Validation Errors Detected:</strong>
+                <ul id="batchValErrorsList" style="margin-left: 1.25rem; margin-top: 0.35rem;"></ul>
+              </div>
+            </div>
+
+            <!-- Templates & Schema Info -->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Supported CSV Formats</h3>
+                  <span class="card-subtitle">Download sample templates matching real backend schema</span>
+                </div>
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+                <div class="info-card">
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <strong>Historical Template (Post-Settlement)</strong>
+                    <button class="btn btn-secondary btn-sm" id="btnDownloadHistTemplate">📥 Download CSV</button>
+                  </div>
+                  <p style="margin-top: 0.25rem;">
+                    Contains settled balances: <code>step, type, amount, nameOrig, oldbalanceOrg, newbalanceOrig, nameDest, oldbalanceDest, newbalanceDest, mode</code>
+                  </p>
+                </div>
+
+                <div class="info-card">
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <strong>Live Authorization Template (In-Flight)</strong>
+                    <button class="btn btn-secondary btn-sm" id="btnDownloadLiveTemplate">📥 Download CSV</button>
+                  </div>
+                  <p style="margin-top: 0.25rem;">
+                    Pre-authorization without settled new balances: <code>step, type, amount, nameOrig, oldbalanceOrg, nameDest, oldbalanceDest, mode</code>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Batch Scoring Results Table & Metrics -->
+          <div class="card" id="batchResultsCard" style="display: none;">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Batch Scoring Results</h3>
+                <span class="card-subtitle" id="batchSummarySubtitle">0 transactions scored</span>
+              </div>
+              <button class="btn btn-secondary btn-sm" id="btnExportBatchCsv">
+                📥 Export Results to CSV
+              </button>
+            </div>
+
+            <!-- KPI Row -->
+            <div class="grid-4" style="margin-bottom: 1.25rem;">
+              <div class="stat-card">
+                <span class="stat-label">Total Evaluated</span>
+                <span class="stat-value" id="batchTotalCount">0</span>
+                <span class="stat-subtext" id="batchLatency">0ms latency</span>
+              </div>
+              <div class="stat-card risk-high">
+                <span class="stat-label">Blocked (High Risk)</span>
+                <span class="stat-value" id="batchBlockCount">0</span>
+              </div>
+              <div class="stat-card risk-medium">
+                <span class="stat-label">Review (Medium Risk)</span>
+                <span class="stat-value" id="batchReviewCount">0</span>
+              </div>
+              <div class="stat-card risk-low">
+                <span class="stat-label">Approved (Low Risk)</span>
+                <span class="stat-value" id="batchApproveCount">0</span>
+              </div>
+            </div>
+
+            <!-- Filter & Search Toolbar -->
+            <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem; align-items: center;">
+              <input type="text" class="form-input" id="batchSearchInput" placeholder="Search by Transaction ID or Account..." style="max-width: 300px;">
+              <select class="form-select" id="batchRiskFilter" style="max-width: 180px;">
+                <option value="ALL">All Risk Tiers</option>
+                <option value="HIGH">High Risk Only</option>
+                <option value="MEDIUM">Medium Risk Only</option>
+                <option value="LOW">Low Risk Only</option>
+              </select>
+            </div>
+
+            <div class="table-wrapper">
+              <table class="data-table" id="batchResultsTable">
+                <thead>
+                  <tr>
+                    <th>TX ID</th>
+                    <th>Risk Tier</th>
+                    <th>Fraud Probability</th>
+                    <th>Recommended Action</th>
+                    <th>Input Mode</th>
+                    <th>Audit Details</th>
+                  </tr>
+                </thead>
+                <tbody id="batchResultsBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ====================================================================
+             VIEW 4: LIVE MONITORING
+             ==================================================================== -->
+        <section class="view-section" id="view-monitoring">
+          <!-- Streaming Infrastructure Status -->
+          <div class="grid-3">
+            <div class="stat-card">
+              <span class="stat-label">Kafka Streaming Broker</span>
+              <span class="stat-value" id="monKafkaStatus" style="font-size: 1.35rem;">ONLINE</span>
+              <span class="stat-subtext">localhost:9092 &bull; Active</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Inbound Events Topic</span>
+              <span class="stat-value" style="font-size: 1.15rem; word-break: break-all;">fraudwatch.transactions.raw</span>
+              <span class="stat-subtext">Group: fraudwatch_scoring_group</span>
+            </div>
+            <div class="stat-card risk-high">
+              <span class="stat-label">Outbound Alert Stream</span>
+              <span class="stat-value" id="monAlertCount">0 Alerts</span>
+              <span class="stat-subtext">fraudwatch.alerts.fraud</span>
+            </div>
+          </div>
+
+          <!-- Controller Card -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Live Fraud Alert Feed</h3>
+                <span class="card-subtitle">Real-time alerts emitted by Kafka consumer scoring worker from <code>reports/kafka_fraud_alerts.jsonl</code></span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <label style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; font-weight: 600; cursor: pointer;">
+                  <input type="checkbox" id="chkAutoPollMonitoring" checked style="cursor: pointer;">
+                  <span>Auto-Poll (5s)</span>
+                </label>
+                <button class="btn btn-secondary btn-sm" id="btnPollAlertsNow">
+                  Poll Now
+                </button>
+              </div>
+            </div>
+
+            <div class="table-wrapper">
+              <table class="data-table" id="monitoringAlertsTable">
+                <thead>
+                  <tr>
+                    <th>Alert Timestamp</th>
+                    <th>Transaction ID</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Origin Account</th>
+                    <th>Recipient Account</th>
+                    <th>Drain Ratio</th>
+                    <th>Fraud Probability</th>
+                    <th>Risk Level</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="monitoringAlertsBody">
+                  <tr>
+                    <td colspan="10" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                      Connecting to streaming alert stream...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ====================================================================
+             VIEW 5: FRAUD CASES
+             ==================================================================== -->
+        <section class="view-section" id="view-cases">
+          <!-- Case Pipeline Metrics -->
+          <div class="grid-5">
+            <div class="stat-card">
+              <span class="stat-label">Total Cases</span>
+              <span class="stat-value" id="caseMetricTotal">0</span>
+              <span class="stat-subtext">SQLite cases.db</span>
+            </div>
+            <div class="stat-card risk-high">
+              <span class="stat-label">Open Alerts</span>
+              <span class="stat-value" id="caseMetricOpen">0</span>
+              <span class="stat-subtext">Awaiting triage</span>
+            </div>
+            <div class="stat-card risk-medium">
+              <span class="stat-label">Investigating</span>
+              <span class="stat-value" id="caseMetricInvestigating">0</span>
+              <span class="stat-subtext">Assigned to analyst</span>
+            </div>
+            <div class="stat-card risk-high">
+              <span class="stat-label">Confirmed Fraud</span>
+              <span class="stat-value" id="caseMetricConfirmed">0</span>
+              <span class="stat-subtext">Verified attacks</span>
+            </div>
+            <div class="stat-card risk-low">
+              <span class="stat-label">False Positive</span>
+              <span class="stat-value" id="caseMetricFalsePositive">0</span>
+              <span class="stat-subtext">Cleared by analyst</span>
+            </div>
+          </div>
+
+          <!-- Cases Management Card -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Analyst Case Workflow</h3>
+                <span class="card-subtitle">Review suspicious transactions and log feedback to audit history</span>
+              </div>
+              <button class="btn btn-secondary btn-sm" id="btnRefreshCases">🔄 Refresh Cases</button>
+            </div>
+
+            <!-- Filters -->
+            <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem; align-items: center;">
+              <input type="text" class="form-input" id="caseSearchInput" placeholder="Search by TX ID or account..." style="max-width: 280px;">
+              <select class="form-select" id="caseStatusFilter" style="max-width: 180px;">
+                <option value="ALL">All Statuses</option>
+                <option value="OPEN">OPEN Only</option>
+                <option value="INVESTIGATING">INVESTIGATING Only</option>
+                <option value="CONFIRMED_FRAUD">CONFIRMED FRAUD Only</option>
+                <option value="FALSE_POSITIVE">FALSE POSITIVE Only</option>
+              </select>
+              <select class="form-select" id="caseRiskFilter" style="max-width: 160px;">
+                <option value="ALL">All Risk Levels</option>
+                <option value="HIGH">HIGH Risk</option>
+                <option value="MEDIUM">MEDIUM Risk</option>
+                <option value="LOW">LOW Risk</option>
+              </select>
+            </div>
+
+            <div class="table-wrapper">
+              <table class="data-table" id="casesTable">
+                <thead>
+                  <tr>
+                    <th>TX ID</th>
+                    <th>Status</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Origin</th>
+                    <th>Recipient</th>
+                    <th>Score</th>
+                    <th>Risk</th>
+                    <th>Analyst Disposition</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="casesBody">
+                  <tr>
+                    <td colspan="10" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                      Loading cases from SQLite case store...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ====================================================================
+             VIEW 6: MODEL & SYSTEM HEALTH
+             ==================================================================== -->
+        <section class="view-section" id="view-health">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Technology Stack Readiness</h3>
+                <span class="card-subtitle">Live status verified against <code>GET /platform/status</code></span>
+              </div>
+            </div>
+
+            <div class="grid-4" id="techStackGrid">
+              <!-- Dynamically populated from API -->
+            </div>
+          </div>
+
+          <!-- Feast Account Feature Inspector -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Feast Feature Store Profile Inspector</h3>
+                <span class="card-subtitle">Query online account features via <code>GET /platform/feature-store/account/{id}</code></span>
+              </div>
+            </div>
+            <div style="display: flex; gap: 0.75rem; max-width: 500px; margin-bottom: 1rem;">
+              <input type="text" class="form-input" id="feastAccountInput" placeholder="Account ID (e.g. C1231006815)" value="C1231006815">
+              <button class="btn btn-primary" id="btnLookupFeast">Query Feast</button>
+            </div>
+            <div id="feastProfileResult" style="padding: 1rem; border-radius: var(--radius-md); background: var(--bg-card-subtle); display: none;"></div>
+          </div>
+
+          <!-- Model Governance & Offline Reports -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Governance & Model Comparison</h3>
+                <span class="card-subtitle">Champion vs Candidate evaluations and data drift audits</span>
+              </div>
+            </div>
+            <div class="grid-3">
+              <div class="info-card">
+                <strong>XGBoost Champion Model</strong>
+                <p>Features: 16 leakage-free features<br>Validation AUPRC: <strong>0.9940</strong><br>Promotion Verdict: <strong>APPROVED</strong></p>
+              </div>
+              <div class="info-card">
+                <strong>Evidently AI Drift Governance</strong>
+                <p>Status: HTML & JSON Reports available<br>Data Drift: Evaluated on test partition<br>Audit: <code>reports/evidently_drift_report.html</code></p>
+              </div>
+              <div class="info-card">
+                <strong>FastAI Tabular & PyG GNN</strong>
+                <p>FastAI AUPRC: 0.8124<br>Graph Neural Network: GCN 2-layer<br>Tracking: MLflow SQLite Store</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ========================================================================
+       MODALS
+       ======================================================================== -->
+
+  <!-- 1. Case Investigation Modal -->
+  <div class="modal-backdrop" id="caseModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title" id="caseModalTitle">Investigate Case: TX-001</h3>
+        <button class="btn-icon" id="btnCloseCaseModal" aria-label="Close Modal">&times;</button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 1rem;">
+        <!-- Metadata pills -->
+        <div class="grid-2" style="background: var(--bg-card-subtle); padding: 0.75rem; border-radius: var(--radius-md);">
+          <div>
+            <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Amount & Type</div>
+            <strong id="caseModalAmount" style="font-size: 1.1rem;">$0.00</strong>
+          </div>
+          <div>
+            <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Fraud Score</div>
+            <strong id="caseModalScore" style="font-size: 1.1rem;">0.00%</strong>
+          </div>
+        </div>
+
+        <form id="caseReviewForm">
+          <div class="form-group">
+            <label class="form-label" for="caseStatusSelect">Workflow Status</label>
+            <select class="form-select" id="caseStatusSelect" required>
+              <option value="OPEN">OPEN (Under Triage)</option>
+              <option value="INVESTIGATING">INVESTIGATING (In Progress)</option>
+              <option value="CONFIRMED_FRAUD">CONFIRMED FRAUD (Attack Confirmed)</option>
+              <option value="FALSE_POSITIVE">FALSE POSITIVE (Cleared)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="caseDispositionSelect">Analyst Disposition</label>
+            <select class="form-select" id="caseDispositionSelect">
+              <option value="SUSPECTED_ACCOUNT_TAKEOVER">SUSPECTED_ACCOUNT_TAKEOVER</option>
+              <option value="MULE_ACCOUNT_TRANSFER">MULE_ACCOUNT_TRANSFER</option>
+              <option value="CARD_NOT_PRESENT_FRAUD">CARD_NOT_PRESENT_FRAUD</option>
+              <option value="LEGITIMATE_CUSTOMER_CONFIRMED">LEGITIMATE_CUSTOMER_CONFIRMED</option>
+              <option value="FALSE_POSITIVE_HIGH_AMOUNT">FALSE_POSITIVE_HIGH_AMOUNT</option>
+              <option value="PENDING_CONTACT">PENDING_CONTACT</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="caseNotesInput">Analyst Investigation Notes</label>
+            <textarea class="form-textarea" id="caseNotesInput" rows="3" placeholder="Enter findings, verification steps, or customer contact notes..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="caseAnalystIdInput">Analyst ID</label>
+            <input type="text" class="form-input" id="caseAnalystIdInput" value="analyst_shubh">
+          </div>
+
+          <div style="display: flex; gap: 0.75rem; margin-top: 1rem;">
+            <button type="submit" class="btn btn-primary" style="flex: 2;">Save Decision</button>
+            <button type="button" class="btn btn-secondary" id="btnCancelCaseReview" style="flex: 1;">Cancel</button>
+          </div>
+        </form>
+
+        <!-- Chronological Audit Trail -->
+        <div style="border-top: 1px solid var(--border-subtle); padding-top: 1rem;">
+          <h4 style="font-size: 0.88rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">Audit Trail & History</h4>
+          <div class="timeline" id="caseAuditTimeline">
+            <div class="timeline-item">
+              <span class="timeline-time">Initial Alert</span>
+              <span class="timeline-desc">Case initialized from transaction scoring stream.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Threshold & Policy Settings Modal -->
+  <div class="modal-backdrop" id="thresholdModal">
+    <div class="modal-dialog" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Decision Policy Thresholds</h3>
+        <button class="btn-icon" id="btnCloseThresholdModal" aria-label="Close Modal">&times;</button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+        <p style="font-size: 0.85rem; color: var(--text-muted);">
+          Configure the fraud probability cutoffs used for automated <strong>BLOCK</strong> and human <strong>REVIEW</strong> decisions under the offline demonstration policy.
+        </p>
+
+        <div class="form-group">
+          <label class="form-label" for="sliderBlock">
+            <span>Block Threshold (High Risk)</span>
+            <strong id="labelSliderBlock">0.90</strong>
+          </label>
+          <input type="range" id="sliderBlock" min="0.50" max="0.99" step="0.01" value="0.90" style="width: 100%;">
+          <span class="form-hint">&ge; threshold triggers automated BLOCK and critical alert.</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="sliderReview">
+            <span>Review Threshold (Medium Risk)</span>
+            <strong id="labelSliderReview">0.50</strong>
+          </label>
+          <input type="range" id="sliderReview" min="0.10" max="0.80" step="0.01" value="0.50" style="width: 100%;">
+          <span class="form-hint">&ge; threshold flags transaction for human analyst review.</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="inputApiUrl">API Server Base URL</label>
+          <input type="url" class="form-input" id="inputApiUrl" value="http://127.0.0.1:8000">
+          <span class="form-hint">FastAPI backend address (default http://127.0.0.1:8000)</span>
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; margin-top: 0.5rem;">
+          <button type="button" class="btn btn-primary" id="btnSaveThresholds" style="flex: 1;">Save Settings</button>
+          <button type="button" class="btn btn-secondary" id="btnResetThresholds">Defaults</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Scripts -->
+  <script src="api.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

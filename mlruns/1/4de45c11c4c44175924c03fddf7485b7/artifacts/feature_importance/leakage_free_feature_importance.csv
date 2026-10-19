@@ -1,0 +1,17 @@
+feature,importance
+orig_drain_ratio,0.42768645
+type_CASH_IN,0.15187666
+orig_old_balance,0.08821154
+log_amount,0.069984674
+type_PAYMENT,0.055586312
+amount,0.03741645
+hour_of_day,0.02958843
+is_merchant,0.029302863
+dest_is_zero,0.028335696
+type_CASH_OUT,0.022553358
+type_TRANSFER,0.021612292
+orig_is_zero,0.017913023
+dest_is_customer,0.00867689
+dest_old_balance,0.008291092
+type_DEBIT,0.0017545202
+day_of_week,0.0012097814

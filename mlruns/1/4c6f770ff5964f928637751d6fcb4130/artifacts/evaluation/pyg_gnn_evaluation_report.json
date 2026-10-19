@@ -1,0 +1,20 @@
+{
+  "model_name": "pyg_fraud_graphsage",
+  "model_architecture": "GraphSAGE(2_layers) + EdgeMLP",
+  "num_nodes": 180453,
+  "num_edges": 120000,
+  "train_edges": 14001,
+  "test_edges": 105999,
+  "training_time_seconds": 5.73,
+  "test_auprc": 0.0031,
+  "test_roc_auc": 0.9211,
+  "decision_threshold": 0.5999,
+  "test_f1": 0.0111,
+  "test_precision": 0.0056,
+  "test_recall": 0.881,
+  "test_tp": 37,
+  "test_fp": 6598,
+  "test_fn": 5,
+  "test_tn": 99359,
+  "blending_analysis": "Standalone XGBoost outperforms standalone GNN due to extreme tabular balance-ratio signal; GNN provides supplementary structural context."
+}

@@ -10,3 +10,5 @@ data/processed/
 *.log
 .DS_Store
 Thumbs.db
+mlflow.db
+*.db-journal

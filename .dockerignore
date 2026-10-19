@@ -1,0 +1,22 @@
+# Version control
+.git
+.gitignore
+.github
+
+# Python virtual environment & cache
+.venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache
+
+# Large datasets not required for Docker runtime (preserved locally on disk)
+data/raw/
+data/processed/leakage_free_train.parquet
+data/processed/paysim_cleaned.parquet
+data/processed/X_features.parquet
+
+# Logs & temporary files
+*.log
+.DS_Store

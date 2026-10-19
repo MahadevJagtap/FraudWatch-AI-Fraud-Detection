@@ -13,6 +13,7 @@ Run from the project root:
 
 from __future__ import annotations
 
+import json
 import os
 import sys
 import time
@@ -25,6 +26,8 @@ from sklearn.metrics import (
     classification_report,
     average_precision_score,
     precision_recall_fscore_support,
+    confusion_matrix,
+    roc_auc_score,
 )
 
 from xgboost import XGBClassifier
@@ -102,7 +105,7 @@ def _build_model(scale_pos_weight: float) -> XGBClassifier:
         eval_metric="aucpr",
         scale_pos_weight=scale_pos_weight,
         tree_method="hist",
-        device="cuda",
+        device="cpu",
         n_jobs=-1,
         random_state=42,
     )
@@ -111,7 +114,7 @@ def _build_model(scale_pos_weight: float) -> XGBClassifier:
 def _evaluate(
     model: XGBClassifier, X_test: pd.DataFrame, y_test: pd.Series
 ) -> Dict[str, Any]:
-    """Compute fraud-class metrics + AUPRC and print a detailed report."""
+    """Compute fraud-class metrics + AUPRC, ROC-AUC, confusion matrix, and print report."""
     print("\nGenerating predictions on the test set ...")
     t0 = time.perf_counter()
     y_pred = model.predict(X_test)
@@ -134,6 +137,9 @@ def _evaluate(
         y_test, y_pred, labels=[1], zero_division=0
     )
     auprc = float(average_precision_score(y_test, y_proba))
+    roc_auc = float(roc_auc_score(y_test, y_proba))
+    cm = confusion_matrix(y_test, y_pred)
+    tn, fp, fn, tp = int(cm[0, 0]), int(cm[0, 1]), int(cm[1, 0]), int(cm[1, 1])
 
     print("=" * 72)
     print("Fraud-class metrics (positive class = 1)")
@@ -141,7 +147,14 @@ def _evaluate(
     print(f"   Precision : {prec[0]:.4f}")
     print(f"   Recall    : {rec[0]:.4f}")
     print(f"   F1-Score  : {f1[0]:.4f}")
-    print(f"   AUPRC     : {auprc:.4f}   <-- PRIMARY METRIC")
+    print(f"   AUPRC     : {auprc:.4f}   <-- PRIMARY IMBALANCED METRIC")
+    print(f"   ROC-AUC   : {roc_auc:.4f}")
+    print("-" * 72)
+    print("Confusion Matrix:")
+    print(f"   TN (Legit -> Legit): {tn:>10,}")
+    print(f"   FP (Legit -> Fraud): {fp:>10,}")
+    print(f"   FN (Fraud -> Legit): {fn:>10,}")
+    print(f"   TP (Fraud -> Fraud): {tp:>10,}")
     print("=" * 72)
 
     return {
@@ -151,6 +164,8 @@ def _evaluate(
         "recall_fraud": float(rec[0]),
         "f1_fraud": float(f1[0]),
         "auprc": auprc,
+        "roc_auc": roc_auc,
+        "confusion_matrix": {"tn": tn, "fp": fp, "fn": fn, "tp": tp},
         "inference_seconds": inference_s,
     }
 
@@ -239,3 +254,32 @@ if __name__ == "__main__":
     fi_path = os.path.join(reports_dir, "feature_importance.csv")
     artifact["feature_importance"].to_csv(fi_path, index=False)
     print(f"Saved feature importance -> {fi_path}")
+
+    metadata = {
+        "model_type": "XGBClassifier",
+        "features": list(artifact["X_train"].columns),
+        "feature_dtypes": {c: str(artifact["X_train"][c].dtype) for c in artifact["X_train"].columns},
+        "target": "isFraud",
+        "scale_pos_weight": float(artifact["scale_pos_weight"]),
+        "train_rows": int(len(artifact["X_train"])),
+        "test_rows": int(len(artifact["X_test"])),
+        "test_fraud_prevalence": float(artifact["y_test"].mean()),
+        "metrics": {
+            "precision_fraud": artifact["metrics"]["precision_fraud"],
+            "recall_fraud": artifact["metrics"]["recall_fraud"],
+            "f1_fraud": artifact["metrics"]["f1_fraud"],
+            "auprc": artifact["metrics"]["auprc"],
+            "roc_auc": artifact["metrics"]["roc_auc"],
+            "confusion_matrix": artifact["metrics"]["confusion_matrix"],
+            "inference_seconds": artifact["metrics"]["inference_seconds"],
+        },
+    }
+    meta_path = os.path.join(models_dir, "model_metadata.json")
+    with open(meta_path, "w", encoding="utf-8") as f:
+        json.dump(metadata, f, indent=2)
+    print(f"Saved model metadata -> {meta_path}")
+
+    eval_report_path = os.path.join(reports_dir, "evaluation_report.json")
+    with open(eval_report_path, "w", encoding="utf-8") as f:
+        json.dump(metadata["metrics"], f, indent=2)
+    print(f"Saved evaluation report -> {eval_report_path}")

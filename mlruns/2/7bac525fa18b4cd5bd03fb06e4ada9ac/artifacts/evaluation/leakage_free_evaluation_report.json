@@ -1,0 +1,17 @@
+{
+  "val_auprc": 0.9891,
+  "val_roc_auc": 0.9999,
+  "val_f1_at_optimal_threshold": 0.9393,
+  "test_auprc": 0.9917,
+  "test_roc_auc": 0.9999,
+  "decision_threshold": 0.8247,
+  "test_precision": 0.9209,
+  "test_recall": 0.9771,
+  "test_f1_at_optimal_threshold": 0.9481,
+  "test_true_positives": 1024,
+  "test_false_positives": 88,
+  "test_false_negatives": 24,
+  "test_true_negatives": 79974,
+  "training_time_seconds": 26.23,
+  "inference_latency_ms": 0.0003
+}
